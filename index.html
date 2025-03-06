@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pesquisa de Satisfação</title>
+  
+  <!-- Fonte Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap"/>
+  
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  
+  <!-- jQuery completo + Popper + Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <style>
+    /* Reset básico e configuração da fonte */
+    * {
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: 'Poppins', sans-serif;
+      background: #f8f5ee;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Cabeçalho moderno com efeito de sombra */
+    .top-bar {
+      width: 100%;
+      background-color: #d3ac56; /* Cor principal */
+      color: #f8f5ee;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+    }
+    .top-bar #current-date {
+      font-size: 1rem;
+      font-weight: 500;
+    }
+    .top-bar img.center-logo {
+      max-height: 60px;
+    }
+
+    /* Container principal com animação de entrada */
+    #surveyFullScreen {
+      width: 100%;
+      height: calc(100vh - 100px); 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    /* Botão Iniciar com design arredondado */
+    .start-box {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      background: transparent;
+      border: 10px solid #d3ac56;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .start-box:hover {
+      animation: pulse 1s infinite;
+    }
+    .start-button {
+      background: #f8f5ee;
+      border-radius: 50%;
+      width: 260px;
+      height: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .start-button h2 {
+      font-size: 1.5rem;
+      color: #2e2e2e;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(211, 172, 86, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 15px rgba(211, 172, 86, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(211, 172, 86, 0);
+      }
+    }
+
+    /* Questionário com efeito de slide */
+    #survey-steps {
+      display: none;
+      width: 90%;
+      max-width: 800px;
+      margin: 0 auto;
+      background: #f8f5ee;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      padding: 40px;
+      animation: fadeInUp 0.5s ease-out;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .question-step {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .question-step.active {
+      display: block;
+      opacity: 1;
+    }
+
+    /* Estilização dos elementos do questionário */
+    .question-step h4 {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      color: #bc8341; /* Cor secundária */
+      text-align: center;
+    }
+
+    .rating-group {
+      display: flex;
+      justify-content: space-around;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+    }
+    .rating-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 5px;
+    }
+    .rating-option input[type="radio"] {
+      display: none; /* Oculto, mas usaremos label + CSS */
+    }
+    .rating-option label {
+      font-size: 3rem;
+      cursor: pointer;
+      margin-bottom: 0.5rem; /* Espaço para o número */
+      transition: transform 0.1s ease;
+    }
+    .rating-option label:hover {
+      transform: scale(1.1);
+    }
+    /* Número abaixo do emoticon */
+    .rating-number {
+      font-size: 1rem;
+      color: #2e2e2e;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    /* Destaque quando selecionado */
+    .rating-option input[type="radio"]:checked + label {
+      background-color: #bc8341;
+      color: #f8f5ee;
+      border-radius: 50%;
+      padding: 0.5rem;
+      transform: scale(1.1);
+    }
+
+    .btn {
+      font-size: 1.2rem;
+      padding: 0.8rem 1.5rem;
+      border-radius: 30px;
+      transition: all 0.3s ease;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    .btn-primary {
+      background-color: #bc8341;
+      border-color: #bc8341;
+      color: #f8f5ee;
+    }
+    .btn-secondary {
+      background-color: #d3ac56;
+      border-color: #d3ac56;
+      color: #f8f5ee;
+    }
+    .btn-success {
+      background-color: #28a745;
+      border-color: #28a745;
+      color: #fff;
+    }
+    .form-control.form-control-lg {
+      font-size: 1.2rem;
+      padding: 1rem;
+    }
+
+    /* Botões "Não" e "Sim" (Pergunta 4) */
+    .btn-outline-primary {
+      border-color: #bc8341 !important;
+      color: #bc8341 !important;
+      margin: 0 10px;
+      border-radius: 30px;
+    }
+    .btn-outline-primary:hover {
+      background-color: #bc8341 !important;
+      color: #f8f5ee !important;
+    }
+
+    /* Efeito de seleção em Pergunta 4 */
+    input[type="radio"].hidden-radio {
+      display: none;
+    }
+    input[type="radio"].hidden-radio:checked + label.btn-outline-primary {
+      background-color: #bc8341 !important;
+      color: #f8f5ee !important;
+      border-color: #bc8341 !important;
+    }
+
+    /* Modal de erro */
+    .modal-title { font-size: 1.5rem; }
+    .modal-body p { font-size: 1.2rem; }
+
+    /* Modal de agradecimento */
+    #thanksModal .modal-body {
+      font-size: 1.2rem;
+    }
+    #thanksModal .modal-body img {
+      max-width: 150px;
+      margin-bottom: 20px;
+    }
+    
+    /* Escondendo o botão Avançar nas perguntas 1, 2, 3, 5 */
+    /* (nós não vamos mostrar esse botão, pois vamos avançar automaticamente ao clicar no emoticon) */
+    .rating-step .next-btn {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Cabeçalho -->
+  <div class="top-bar">
+    <div id="current-date"></div>
+    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo da Empresa" class="center-logo"/>
+  </div>
+
+  <!-- MODAL DE ERRO -->
+  <div class="modal fade" id="errorModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Atenção</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Por favor, selecione uma opção antes de avançar.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Entendido</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE AGRADECIMENTO -->
+  <div class="modal fade" id="thanksModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document"> 
+      <div class="modal-content">
+        <div class="modal-body text-center">
+          <img src="{{ url_for('static', filename='images/LOGO_C_1.png') }}" alt="Logo da Empresa">
+          <h4 class="mt-3">Obrigado pela sua participação!</h4>
+          <p>Sua opinião é muito importante para nós.</p>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-success" data-dismiss="modal" id="thanksOkBtn">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTAINER PRINCIPAL -->
+  <div id="surveyFullScreen">
+    <!-- BOTÃO INICIAR PESQUISA -->
+    <div class="start-box" id="startBox">
+      <div class="start-button">
+        <h2>Iniciar Pesquisa</h2>
+      </div>
+    </div>
+
+    <!-- QUESTIONÁRIO (oculto até clicar em "Iniciar Pesquisa") -->
+    <div id="survey-steps">
+      <form action="{{ url_for('pesquisa_satisfacao') }}" method="POST" id="surveyForm">
+        
+        <!-- ETAPA 1 (rating-step => auto-avança) -->
+        <div class="question-step active rating-step" id="step-1" data-next="step-2">
+          <h4>1 - O que você achou da organização da nossa loja?</h4>
+          <div class="rating-group">
+            <div class="rating-option">
+              <input type="radio" id="p1-1" name="pergunta1" value="1">
+              <label for="p1-1">😡</label>
+              <span class="rating-number">1</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p1-2" name="pergunta1" value="2">
+              <label for="p1-2">😕</label>
+              <span class="rating-number">2</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p1-3" name="pergunta1" value="3">
+              <label for="p1-3">😐</label>
+              <span class="rating-number">3</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p1-4" name="pergunta1" value="4">
+              <label for="p1-4">🙂</label>
+              <span class="rating-number">4</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p1-5" name="pergunta1" value="5">
+              <label for="p1-5">😍</label>
+              <span class="rating-number">5</span>
+            </div>
+          </div>
+          <!-- Botão "Avançar" escondido pela classe rating-step -->
+          <div class="text-right">
+            <button type="button" class="btn btn-primary next-btn">Avançar</button>
+          </div>
+        </div>
+
+        <!-- ETAPA 2 (rating-step => auto-avança) -->
+        <div class="question-step rating-step" id="step-2" data-next="step-3">
+          <h4>2 - O que você achou do nosso atendimento?</h4>
+          <div class="rating-group">
+            <div class="rating-option">
+              <input type="radio" id="p2-1" name="pergunta2" value="1">
+              <label for="p2-1">😡</label>
+              <span class="rating-number">1</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p2-2" name="pergunta2" value="2">
+              <label for="p2-2">😕</label>
+              <span class="rating-number">2</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p2-3" name="pergunta2" value="3">
+              <label for="p2-3">😐</label>
+              <span class="rating-number">3</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p2-4" name="pergunta2" value="4">
+              <label for="p2-4">🙂</label>
+              <span class="rating-number">4</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p2-5" name="pergunta2" value="5">
+              <label for="p2-5">😍</label>
+              <span class="rating-number">5</span>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary prev-btn" data-prev="step-1">Voltar</button>
+            <button type="button" class="btn btn-primary next-btn">Avançar</button>
+          </div>
+        </div>
+
+        <!-- ETAPA 3 (rating-step => auto-avança) -->
+        <div class="question-step rating-step" id="step-3" data-next="step-4">
+          <h4>3 - O que você achou dos nossos produtos?</h4>
+          <div class="rating-group">
+            <div class="rating-option">
+              <input type="radio" id="p3-1" name="pergunta3" value="1">
+              <label for="p3-1">😡</label>
+              <span class="rating-number">1</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p3-2" name="pergunta3" value="2">
+              <label for="p3-2">😕</label>
+              <span class="rating-number">2</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p3-3" name="pergunta3" value="3">
+              <label for="p3-3">😐</label>
+              <span class="rating-number">3</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p3-4" name="pergunta3" value="4">
+              <label for="p3-4">🙂</label>
+              <span class="rating-number">4</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p3-5" name="pergunta3" value="5">
+              <label for="p3-5">😍</label>
+              <span class="rating-number">5</span>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary prev-btn" data-prev="step-2">Voltar</button>
+            <button type="button" class="btn btn-primary next-btn">Avançar</button>
+          </div>
+        </div>
+
+        <!-- ETAPA 4 (Sim/Não) => mantém botão Avançar -->
+        <div class="question-step" id="step-4" data-next="step-5">
+          <h4>4 - Você queria algum produto que não encontrou em nossa loja?</h4>
+          <div class="d-flex justify-content-around mb-3" style="margin-top: 2rem;">
+            <input type="radio" id="p4-nao" name="pergunta4_radio" value="nao" class="hidden-radio">
+            <label for="p4-nao" class="btn btn-outline-primary btn-lg">Não</label>
+
+            <input type="radio" id="p4-sim" name="pergunta4_radio" value="sim" class="hidden-radio">
+            <label for="p4-sim" class="btn btn-outline-primary btn-lg">Sim</label>
+          </div>
+          <div id="pergunta4_textarea" class="mb-4" style="display: none;">
+            <textarea class="form-control form-control-lg" name="pergunta4_text" rows="3" placeholder="Descreva o produto que você procurava"></textarea>
+          </div>
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary prev-btn" data-prev="step-3">Voltar</button>
+            <button type="button" class="btn btn-primary next-btn">Avançar</button>
+          </div>
+        </div>
+
+        <!-- ETAPA 5 (rating-step => auto-avança) -->
+        <div class="question-step rating-step" id="step-5" data-next="step-6">
+          <h4>5 - No geral, qual nota você daria para sua experiência na loja?</h4>
+          <div class="rating-group">
+            <div class="rating-option">
+              <input type="radio" id="p5-1" name="pergunta5" value="1">
+              <label for="p5-1">😡</label>
+              <span class="rating-number">1</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p5-2" name="pergunta5" value="2">
+              <label for="p5-2">😕</label>
+              <span class="rating-number">2</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p5-3" name="pergunta5" value="3">
+              <label for="p5-3">😐</label>
+              <span class="rating-number">3</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p5-4" name="pergunta5" value="4">
+              <label for="p5-4">🙂</label>
+              <span class="rating-number">4</span>
+            </div>
+            <div class="rating-option">
+              <input type="radio" id="p5-5" name="pergunta5" value="5">
+              <label for="p5-5">😍</label>
+              <span class="rating-number">5</span>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary prev-btn" data-prev="step-4">Voltar</button>
+            <button type="button" class="btn btn-primary next-btn">Avançar</button>
+          </div>
+        </div>
+
+        <!-- ETAPA 6: Identificação Opcional -->
+        <div class="question-step" id="step-6">
+          <h4>Deseja se identificar?</h4>
+          <p style="font-size: 1.6rem;">Se preferir, informe seu nome e WhatsApp abaixo:</p>
+          <div class="form-group">
+            <input type="text" class="form-control form-control-lg" name="nome" placeholder="Seu nome (opcional)">
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control form-control-lg" name="whatsapp" placeholder="Seu WhatsApp (opcional)">
+          </div>
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary prev-btn" data-prev="step-5">Voltar</button>
+            <button type="submit" class="btn btn-success">Enviar Feedback</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Exibir data atual no cabeçalho
+    document.addEventListener("DOMContentLoaded", function() {
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const now = new Date();
+      const dateString = now.toLocaleDateString('pt-BR', options);
+      document.getElementById('current-date').textContent =
+        dateString.charAt(0).toUpperCase() + dateString.slice(1);
+    });
+
+    // Se "thankyou=1", abre modal de agradecimento
+    {% if thankyou %}
+      $('#thanksModal').modal('show');
+    {% endif %}
+
+    // Ao fechar o modal de agradecimento, volta ao início
+    $('#thanksOkBtn').click(function(){
+      $('#thanksModal').modal('hide');
+      $('#startBox').show();
+      $('#survey-steps').hide();
+    });
+
+    // Botão Iniciar Pesquisa
+    $('#startBox').click(function(){
+      $(this).fadeOut(300, function(){
+        $('#survey-steps').fadeIn(300);
+      });
+    });
+
+    // Botões Voltar (funcionam normalmente)
+    $('.prev-btn').click(function(){
+      var prevStep = $(this).data('prev');
+      var currentStep = $(this).closest('.question-step');
+      currentStep.removeClass('active').fadeOut(300, function(){
+        $('#' + prevStep).fadeIn(300).addClass('active');
+      });
+    });
+
+    // Lógica de avançar (automático ao clicar no emoticon) para perguntas de avaliação
+    // e "Avançar" button para Pergunta 4
+    function goToNextStep(currentStepId, nextStepId) {
+      $('#' + currentStepId).removeClass('active').fadeOut(300, function(){
+        $('#' + nextStepId).fadeIn(300).addClass('active');
+      });
+    }
+
+    // 1) Avanço automático ao selecionar um emoticon (Perguntas 1,2,3,5)
+    $('.rating-step input[type="radio"]').change(function(){
+      var step = $(this).closest('.question-step');
+      var nextStep = step.data('next'); // pega o data-next do container
+      if (!$(this).is(':checked')) {
+        // Se não estiver marcado, exibe modal de erro
+        $('#errorModal').modal('show');
+      } else {
+        // Avança automaticamente
+        goToNextStep(step.attr('id'), nextStep);
+      }
+    });
+
+    // 2) Botão "Avançar" (usado em Pergunta 4 e para fallback se ainda existir)
+    $('.next-btn').click(function(){
+      var currentStep = $(this).closest('.question-step');
+      var nextStep = currentStep.data('next');
+      
+      // Verifica se alguma opção foi selecionada (se houver radios)
+      var radioGroup = currentStep.find('input[type="radio"]');
+      var valid = false;
+      if(radioGroup.length === 0){
+        valid = true; 
+      } else {
+        radioGroup.each(function(){
+          if($(this).is(':checked')){
+            valid = true;
+            return false;
+          }
+        });
+      }
+      if (!valid) {
+        $('#errorModal').modal('show');
+        return;
+      }
+
+      // Se for Pergunta 4 e a pessoa escolheu "sim", já habilitamos a caixa de texto (opcional).
+      // Se for necessário exigir texto, podemos checar aqui. Por enquanto, não exigimos.
+      goToNextStep(currentStep.attr('id'), nextStep);
+    });
+
+    // Pergunta 4: se "sim", mostra textarea; se "não", oculta
+    $('input[name="pergunta4_radio"]').change(function(){
+      if($(this).val() === 'sim'){
+        $('#pergunta4_textarea').fadeIn(200);
+      } else {
+        $('#pergunta4_textarea').fadeOut(200);
+        $('#pergunta4_textarea textarea').val('');
+      }
+    });
+  </script>
+</body>
+</html>
